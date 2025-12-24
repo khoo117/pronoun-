@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pronouns Grammar Quiz (20 Questions)</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f3f5f9; margin:0; padding:16px; }
+    .wrap { max-width: 980px; margin: 0 auto; background:#fff; border-radius:12px; padding:18px 18px 10px; }
+    h1 { margin: 0 0 8px; font-size: 20px; }
+    .sub { color:#556; margin: 0 0 14px; font-size: 14px; line-height: 1.5; }
+    .q { border-top: 1px solid #eee; padding: 14px 4px; }
+    .q:first-of-type { border-top: none; }
+    .qtitle { display:flex; gap:10px; align-items:flex-start; justify-content:space-between; }
+    .sentence { font-size: 16px; line-height: 1.5; margin: 0 0 10px; }
+    .controls { display:flex; gap:8px; flex-wrap:wrap; }
+    button {
+      border: 0; border-radius: 8px; padding: 8px 12px; cursor: pointer;
+      background:#2563eb; color:#fff; font-size: 14px;
+    }
+    button.secondary { background:#64748b; }
+    .options { display:flex; flex-wrap:wrap; gap:10px 18px; }
+    label { cursor:pointer; }
+    .pill {
+      display:inline-flex; align-items:center; gap:8px;
+      border:2px solid #cfd6e4; border-radius:999px; padding:6px 10px;
+      background:#fff;
+    }
+    .pill.correct { border-color:#22c55e; background:#ecfff4; }
+    .pill.wrong { border-color:#ef4444; background:#fff1f0; }
+    .hint { margin-top:8px; font-size: 13px; color:#6b7280; }
+    .hint.ok { color:#16a34a; font-weight:700; }
+    .hint.bad { color:#b91c1c; font-weight:700; }
+    .explain { margin-top:6px; font-size: 13px; color:#374151; display:none; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+    .score { font-weight: 800; margin: 10px 0 14px; }
+    .answersBox {
+      display:none; background:#eef1f7; padding:12px; border-radius:10px; margin: 10px 0 14px;
+      font-size: 14px;
+    }
+    .tiny { font-size: 12px; color:#6b7280; }
+    .blank { font-weight: 800; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <h1>Pronouns 代名词语法练习（20题）</h1>
+        <p class="sub">
+          题型：单选题（避免歧义）。选择后会即时提示对/错。<br>
+          点击 <b>Check All</b> 可显示总分、正确答案与简短讲解。点击 🔊 可听句子发音。
+        </p>
+      </div>
+      <div class="controls">
+        <button onclick="checkAll()">Check All</button>
+        <button class="secondary" onclick="resetAll()">Reset</button>
+      </div>
+    </div>
+
+    <div id="quiz"></div>
+
+    <div id="score" class="score"></div>
+    <div id="answersBox" class="answersBox"></div>
+    <p class="tiny">发音功能使用浏览器内建语音（Web Speech API）。手机上可能需要先点一次按钮才会播放。</p>
+  </div>
+
+<script>
+const questions = [
+  {
+    sentence: "This is my phone. Please don’t touch _____.",
+    options: ["I", "me", "my", "mine", "it"],
+    answer: "it",
+    explain: "代替前面提到的单数物品（my phone）→ 用 it。"
+  },
+  {
+    sentence: "Sarah is absent today. I will call ____ later.",
+    options: ["she", "her", "hers", "them"],
+    answer: "her",
+    explain: "动词 call 后要用宾格 → her。"
+  },
+  {
+    sentence: "____ is raining heavily, so we will stay indoors.",
+    options: ["It", "He", "They", "This"],
+    answer: "It",
+    explain: "谈天气/时间/距离常用 it 作形式主语。"
+  },
+  {
+    sentence: "Tom and I are classmates. ____ study together after school.",
+    options: ["We", "Us", "Our", "Ours"],
+    answer: "We",
+    explain: "句子主语位置用主格 → We。"
+  },
+  {
+    sentence: "This book is not yours. It is ____.",
+    options: ["my", "mine", "me", "I"],
+    answer: "mine",
+    explain: "be 动词后用名词性物主代词（mine=我的书）。"
+  },
+  {
+    sentence: "Please give the keys to ____.",
+    options: ["he", "him", "his", "they"],
+    answer: "him",
+    explain: "介词 to 后用宾格 → him。"
+  },
+  {
+    sentence: "My parents are kind. ____ always support me.",
+    options: ["They", "Them", "Their", "Theirs"],
+    answer: "They",
+    explain: "句子主语位置用主格 → They。"
+  },
+  {
+    sentence: "I can’t find my pen. Can I borrow _____?",
+    options: ["you", "your", "yours", "yourself"],
+    answer: "yours",
+    explain: "borrow yours = 借你的（笔）。名词性物主代词。"
+  },
+  {
+    sentence: "The teacher asked ____ to be quiet.",
+    options: ["we", "us", "our", "ours"],
+    answer: "us",
+    explain: "asked 后要用宾格 → us。"
+  },
+  {
+    sentence: "This is not my seat. It is ____ seat.",
+    options: ["he", "him", "his", "hers"],
+    answer: "his",
+    explain: "修饰名词 seat 用形容词性物主代词 his。"
+  },
+  {
+    sentence: "Anna did the homework by ____.",
+    options: ["she", "her", "herself", "hers"],
+    answer: "herself",
+    explain: "by oneself = 独自。反身代词 herself。"
+  },
+  {
+    sentence: "I saw John and Mary, and I waved at ____.",
+    options: ["they", "them", "their", "theirs"],
+    answer: "them",
+    explain: "at 是介词，后面用宾格 → them。"
+  },
+  {
+    sentence: "____ laptop is new, but mine is old.",
+    options: ["Your", "Yours", "You", "Yourself"],
+    answer: "Your",
+    explain: "后面有名词 laptop，用形容词性物主代词 your。"
+  },
+  {
+    sentence: "We enjoyed ____ at the party last night.",
+    options: ["we", "us", "our", "ourselves"],
+    answer: "ourselves",
+    explain: "enjoy oneself = 玩得开心。ourselves。"
+  },
+  {
+    sentence: "Could you help ____ with this problem?",
+    options: ["I", "me", "my", "mine"],
+    answer: "me",
+    explain: "help 后用宾格 → me。"
+  },
+  {
+    sentence: "The kids are hungry. Please give ____ some food.",
+    options: ["they", "them", "their", "theirs"],
+    answer: "them",
+    explain: "give 后用宾格 → them。"
+  },
+  {
+    sentence: "This is my sister. ____ name is Lily.",
+    options: ["Her", "Hers", "She", "Him"],
+    answer: "Her",
+    explain: "修饰名词 name 用形容词性物主代词 her。"
+  },
+  {
+    sentence: "Is this your bag? Yes, it’s ____.",
+    options: ["my", "mine", "me", "I"],
+    answer: "mine",
+    explain: "it’s mine = 它是我的（包）。名词性物主代词。"
+  },
+  {
+    sentence: "My brother and I will do it ____.",
+    options: ["ourselves", "myself", "himself", "themselves"],
+    answer: "ourselves",
+    explain: "主语是 my brother and I → ourselves。"
+  },
+  {
+    sentence: "That man is Mr. Lee. ____ teaches English.",
+    options: ["He", "Him", "His", "They"],
+    answer: "He",
+    explain: "句子主语位置用主格 → He。"
+  },
+];
+
+// --- Build UI ---
+const quiz = document.getElementById("quiz");
+
+function build() {
+  quiz.innerHTML = "";
+  questions.forEach((q, idx) => {
+    const qDiv = document.createElement("div");
+    qDiv.className = "q";
+    qDiv.id = `qwrap-${idx}`;
+
+    const sentenceHtml = q.sentence.replace("____", `<span class="blank">____</span>`);
+
+    qDiv.innerHTML = `
+      <div class="qtitle">
+        <p class="sentence"><b>${idx+1}.</b> ${sentenceHtml}</p>
+        <div class="controls">
+          <button class="secondary" onclick="speakSentence(${idx})">🔊 Speak</button>
+        </div>
+      </div>
+
+      <div class="options" id="opts-${idx}">
+        ${q.options.map((opt, j) => `
+          <label class="pill" id="pill-${idx}-${j}">
+            <input type="radio" name="q${idx}" value="${opt}" />
+            ${opt}
+          </label>
+        `).join("")}
+      </div>
+
+      <div class="hint" id="hint-${idx}">Tip: choose the correct pronoun for the blank.</div>
+      <div class="explain" id="exp-${idx}">Explanation: ${q.explain}</div>
+    `;
+    quiz.appendChild(qDiv);
+
+    // add instant feedback listener
+    const radios = qDiv.querySelectorAll(`input[name="q${idx}"]`);
+    radios.forEach(r => {
+      r.addEventListener("change", () => instantCheck(idx));
+    });
+  });
+}
+
+build();
+
+// --- Speech ---
+function speakSentence(idx){
+  const q = questions[idx];
+  // Speak the sentence with the correct answer filled in
+  const text = q.sentence.replace("____", q.answer);
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+// --- Helpers ---
+function getSelected(idx){
+  const picked = document.querySelector(`input[name="q${idx}"]:checked`);
+  return picked ? picked.value : null;
+}
+
+function setPillsNeutral(idx){
+  const wrap = document.getElementById(`opts-${idx}`);
+  wrap.querySelectorAll(".pill").forEach(p => p.classList.remove("correct","wrong"));
+}
+
+function instantCheck(idx){
+  const picked = getSelected(idx);
+  const q = questions[idx];
+  const hint = document.getElementById(`hint-${idx}`);
+  const exp = document.getElementById(`exp-${idx}`);
+  setPillsNeutral(idx);
+
+  if(!picked){
+    hint.textContent = "Tip: choose the correct pronoun for the blank.";
+    hint.className = "hint";
+    exp.style.display = "none";
+    return;
+  }
+
+  // highlight chosen pill
+  const labels = [...document.getElementById(`opts-${idx}`).querySelectorAll(".pill")];
+  const chosenLabel = labels.find(l => l.querySelector("input").value === picked);
+
+  if(picked === q.answer){
+    chosenLabel.classList.add("correct");
+    hint.textContent = "✓ Correct";
+    hint.className = "hint ok";
+    exp.style.display = "none"; // keep explanation for final checkAll
+  } else {
+    chosenLabel.classList.add("wrong");
+    hint.textContent = `✗ Not correct. Hint: correct answer starts with "${q.answer[0]}"`;
+    hint.className = "hint bad";
+    exp.style.display = "none";
+  }
+}
+
+function checkAll(){
+  let score = 0;
+  const wrongItems = [];
+
+  questions.forEach((q, idx) => {
+    const picked = getSelected(idx);
+    const hint = document.getElementById(`hint-${idx}`);
+    const exp = document.getElementById(`exp-${idx}`);
+    setPillsNeutral(idx);
+
+    const labels = [...document.getElementById(`opts-${idx}`).querySelectorAll(".pill")];
+    const chosenLabel = picked ? labels.find(l => l.querySelector("input").value === picked) : null;
+    const correctLabel = labels.find(l => l.querySelector("input").value === q.answer);
+
+    if(picked === q.answer){
+      score++;
+      if(chosenLabel) chosenLabel.classList.add("correct");
+      hint.textContent = "✓ Correct";
+      hint.className = "hint ok";
+      exp.style.display = "none";
+    } else {
+      if(chosenLabel) chosenLabel.classList.add("wrong");
+      correctLabel.classList.add("correct");
+      hint.textContent = `✗ Correct answer: ${q.answer}`;
+      hint.className = "hint bad";
+      exp.style.display = "block";
+
+      wrongItems.push(`${idx+1}. Correct: <b>${q.answer}</b> — ${q.explain}`);
+    }
+  });
+
+  document.getElementById("score").textContent = `Score: ${score} / ${questions.length}`;
+
+  const box = document.getElementById("answersBox");
+  box.style.display = "block";
+  box.innerHTML = wrongItems.length
+    ? `<b>Wrong Items (Correct Answers + Explanation):</b><br><br>${wrongItems.join("<br><br>")}`
+    : `<b>Excellent!</b> All answers are correct 🎉`;
+}
+
+function resetAll(){
+  questions.forEach((q, idx) => {
+    document.querySelectorAll(`input[name="q${idx}"]`).forEach(r => r.checked = false);
+    setPillsNeutral(idx);
+    const hint = document.getElementById(`hint-${idx}`);
+    const exp = document.getElementById(`exp-${idx}`);
+    hint.textContent = "Tip: choose the correct pronoun for the blank.";
+    hint.className = "hint";
+    exp.style.display = "none";
+  });
+  document.getElementById("score").textContent = "";
+  const box = document.getElementById("answersBox");
+  box.style.display = "none";
+  box.innerHTML = "";
+}
+</script>
+</body>
+</html>
